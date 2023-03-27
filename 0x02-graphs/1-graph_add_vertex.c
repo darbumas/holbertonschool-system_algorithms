@@ -13,7 +13,6 @@ vertex_t *graph_add_vertex(graph_t *graph, const char *str)
 
 	if (!graph || !str)
 		return (NULL);
-
 	/* First check if a vertex with same content already exist */
 	temp = graph->vertices;
 	while (temp)
@@ -22,12 +21,10 @@ vertex_t *graph_add_vertex(graph_t *graph, const char *str)
 			return (NULL);
 		temp = temp->next;
 	}
-
 	/* Allocate memory for new vertex */
-	vertex = calloc(1, sizeof(vertex_t));
+	vertex = malloc(sizeof(vertex_t));
 	if (!vertex)
 		return (NULL);
-
 	/* Allocate memory for the content and copy the string */
 	vertex->content = strdup(str);
 	if (!vertex->content)
@@ -35,15 +32,17 @@ vertex_t *graph_add_vertex(graph_t *graph, const char *str)
 		free(vertex);
 		return (NULL);
 	}
-
-	/* Initialize new vertext */
+	/* Initialize new vertex */
 	vertex->index = graph->nb_vertices;
+	vertex->nb_edges = 0;
 	vertex->edges = NULL;
-	vertex->next = graph->vertices;
-
+	vertex->next = NULL;
 	/* Update the graph */
-	graph->vertices = vertex;
+	if (!graph->last_v)
+		graph->vertices = vertex;
+	else
+		graph->last_v->next = vertex;
+	graph->last_v = vertex;
 	graph->nb_vertices++;
-
 	return (vertex);
 }
