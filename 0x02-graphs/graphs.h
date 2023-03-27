@@ -65,6 +65,7 @@ typedef struct graph_s
 {
 	size_t      nb_vertices;
 	vertex_t    *vertices;
+	vertex_t    *last_v;
 } graph_t;
 
 /* Print function */
