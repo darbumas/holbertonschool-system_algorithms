@@ -11,7 +11,7 @@ vertex_t *graph_add_vertex(graph_t *graph, const char *str)
 {
 	vertex_t *vertex, *temp;
 
-	if (!graph)
+	if (!graph || !str)
 		return (NULL);
 
 	/* First check if a vertex with same content already exist */
