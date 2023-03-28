@@ -45,15 +45,15 @@ size_t depth_first_traverse(const graph_t *graph, void (*action)
 		(const vertex_t *v, size_t depth))
 {
 	size_t max = 0, i = 0;
-	bool *visited = malloc(graph->nb_vertices * sizeof(bool));
+	bool *visited;
 
 	if (!graph || !action)
 	{
-		free(visited);
 		return (0);
 	}
 
 	/* Initialize the visited array to keep track of visited vertices */
+	visited = malloc(graph->nb_vertices * sizeof(bool));
 	for (; i < graph->nb_vertices; i++)
 		visited[i] = false;
 
