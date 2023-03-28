@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /**
  * enum edge_type_e - Enumerates the different types of
@@ -65,7 +66,6 @@ typedef struct graph_s
 {
 	size_t      nb_vertices;
 	vertex_t    *vertices;
-	vertex_t    *last_v;
 } graph_t;
 
 /* Print function */
