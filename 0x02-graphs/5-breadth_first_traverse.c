@@ -1,21 +1,6 @@
 #include "graphs.h"
 
 /**
- * struct queue_node_s - Representation of a queue
- * For keeping track of the vertices to visit
- * 
- * @vertex: pointer to the current vertex
- * @depth: depth of the current vertex relative to the starting vertex
- * @next: pointer to the next node in the queue
- */
-typedef struct queue_node_s
-{
-	vertex_t *vertex;
-	size_t depth;
-	struct queue_node_s *next;
-} queue_node_t;
-
-/**
  * enqueue - enqueues a given vertex with its corresponding depth
  * @rear: pointer to the last node of the queue
  * @vertex: pointer to the vertex to enqueue
@@ -40,7 +25,8 @@ queue_node_t *enqueue(queue_node_t *rear, vertex_t *vertex, size_t depth)
 }
 
 /**
- * dequeue - dequeues the front node from the queue and update the front pointer
+ * dequeue - dequeues the front node from the queue and
+ * update the front pointer
  * @front: pointer to a pointer to the first node of the queue
  *
  * Return: pointer to the dequeued node, NULL otherwise
@@ -58,7 +44,7 @@ queue_node_t *dequeue(queue_node_t **front)
 }
 
 /**
- * breath_first_traverse - goes through a graph using the breadth-first
+ * breadth_first_traverse - goes through a graph using the breadth-first
  * algorithm
  * @graph: pointer to the graph to traverse
  * @action: pointer to a function to be called for each visited vertex
@@ -79,7 +65,7 @@ size_t breadth_first_traverse(const graph_t *graph, void (*action)
 	visited = malloc(graph->nb_vertices * sizeof(bool));
 	if (!visited)
 		return (0);
-	for (i = 0; i< graph->nb_vertices; i++)
+	for (i = 0; i < graph->nb_vertices; i++)
 		visited[i] = false;
 
 	/* Initialize the queue with the first vertext and depth 0 */
