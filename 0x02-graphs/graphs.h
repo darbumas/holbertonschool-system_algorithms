@@ -70,6 +70,21 @@ typedef struct graph_s
 	vertex_t    *vertices;
 } graph_t;
 
+/**
+ * struct queue_node_s - Representation of a queue
+ * For keeping track of the vertices to visit
+ *
+ * @vertex: pointer to the current vertex
+ * @depth: depth of the current vertex relative to the starting vertex
+ * @next: pointer to the next node in the queue
+ */
+typedef struct queue_node_s
+{
+	vertex_t *vertex;
+	size_t depth;
+	struct queue_node_s *next;
+} queue_node_t;
+
 /* Print function */
 void graph_display(const graph_t *graph);
 
