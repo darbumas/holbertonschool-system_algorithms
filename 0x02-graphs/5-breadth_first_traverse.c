@@ -12,6 +12,8 @@ size_t breadth_first_traverse(const graph_t *graph, void (*action)
 {
 	size_t max_depth, current_level_size, next_level_size, i;
 	bool *visited;
+	vertex_t **current_level, **next_level, *v, *neighbor;
+	edge_t *edge;
 
 	if (!graph || !action)
 		return (0);
@@ -21,7 +23,7 @@ size_t breadth_first_traverse(const graph_t *graph, void (*action)
 
 	max_depth = 0;
 	current_level_size = 1;
-	vertex_t **current_level = malloc(current_level_size * sizeof(vertex_t *));
+	current_level = malloc(current_level_size * sizeof(vertex_t *));
 
 	if (!current_level)
 	{
@@ -32,19 +34,19 @@ size_t breadth_first_traverse(const graph_t *graph, void (*action)
 	while (current_level_size > 0)
 	{
 		next_level_size = 0;
-		vertex_t **next_level = NULL;
+		next_level = NULL;
 
 		for (i = 0; i < current_level_size; ++i)
 		{
-			vertex_t *v = current_level[i];
+			v = current_level[i];
 
 			if (!visited[v->index])
 			{
 				visited[v->index] = true;
 				action(v, max_depth);
-				for (edge_t *edge = v->edges; edge; edge = edge->next)
+				for (edge = v->edges; edge; edge = edge->next)
 				{
-					vertex_t *neighbor = edge->dest;
+					neighbor = edge->dest;
 
 					if (!visited[neighbor->index])
 					{
