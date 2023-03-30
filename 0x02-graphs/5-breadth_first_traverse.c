@@ -75,20 +75,15 @@ size_t breadth_first_traverse(const graph_t *graph,
 	visited[graph->vertices->index] = true;
 	while (front != NULL)
 	{
-		/* Dequeue the front node and get its vertex and depth */
 		current_node = dequeue(&front, &rear);
 		current_vertex = current_node->vertex;
 		current_depth = current_node->depth;
-		/* Update max_depth if necessary and call action */
 		if (current_depth > max_depth)
 			max_depth = current_depth;
 		action(current_vertex, current_depth);
-
-		/* Iterate through the neighbors of the current vertex */
 		for (edge = current_vertex->edges; edge; edge = edge->next)
 		{
 			neighbor = edge->dest;
-			/* If not visited yet, enqueue it and mark visited */
 			if (!visited[neighbor->index])
 			{
 				visited[neighbor->index] = true;
