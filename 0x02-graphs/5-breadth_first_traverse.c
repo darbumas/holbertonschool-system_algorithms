@@ -1,113 +1,71 @@
 #include "graphs.h"
 
 /**
- * enqueue - enqueues a given vertex with its corresponding depth
- * @rear: pointer to the last node of the queue
- * @vertex: pointer to the vertex to enqueue
- * @depth: depth of the vertex being enqueued
- * Return: pointer to the newly created node; NULL otherwise
- */
-queue_node_t *enqueue(queue_node_t *rear, vertex_t *vertex, size_t depth)
-{
-	queue_node_t *new_node = malloc(sizeof(queue_node_t));
-
-	if (!new_node)
-		return (NULL);
-
-	new_node->vertex = vertex;
-	new_node->depth = depth;
-	new_node->next = NULL;
-
-	if (rear)
-		rear->next = new_node;
-
-	return (new_node);
-}
-
-/**
- * dequeue - dequeues the front node from the queue and
- * update the front pointer
- * @front: pointer to a pointer to the first node of the queue
- *
- * Return: pointer to the dequeued node, NULL otherwise
- */
-queue_node_t *dequeue(queue_node_t **front)
-{
-	queue_node_t *prev = NULL;
-
-	if (!*front)
-		return (prev);
-	prev = *front;
-	*front = prev->next;
-
-	return (prev);
-}
-
-/**
- * breadth_first_traverse - goes through a graph using the breadth-first
- * algorithm
+ * breadth_first_traverse - goes through a graph using the BFS algorithm
  * @graph: pointer to the graph to traverse
  * @action: pointer to a function to be called for each visited vertex
- * Return: the biggest vertex depth, 0 otherwise
+ * Return: biggest vertex depth, 0 otherwise
  */
+
 size_t breadth_first_traverse(const graph_t *graph, void (*action)
 		(const vertex_t *v, size_t depth))
 {
-	size_t depth, i, max = 0;
+	size_t max_depth, current_level_size, next_level_size, i;
 	bool *visited;
-	vertex_t *vertex;
-	edge_t *edge;
-	queue_node_t *rear, *current, *front;
 
 	if (!graph || !action)
 		return (0);
-
-	visited = malloc(graph->nb_vertices * sizeof(bool));
+	visited = calloc(graph->nb_vertices, sizeof(bool));
 	if (!visited)
 		return (0);
-	for (i = 0; i < graph->nb_vertices; i++)
-		visited[i] = false;
 
-	/* Initialize the queue with the first vertext and depth 0 */
-	front = NULL;
-	rear = enqueue(front, graph->vertices, 0);
-	if (!rear)
+	max_depth = 0;
+	current_level_size = 1;
+	vertex_t **current_level = malloc(current_level_size * sizeof(vertex_t *));
+
+	if (!current_level)
 	{
 		free(visited);
 		return (0);
 	}
-	front = rear;
-
-	/* Iterate through the queue until it's empty */
-	while (front)
+	current_level[0] = graph->vertices;
+	while (current_level_size > 0)
 	{
-		current = dequeue(&front);
-		vertex = current->vertex;
-		depth = current->depth;
-	/* If the vertex hasn't been visited yet */
-		if (!visited[vertex->index])
+		next_level_size = 0;
+		vertex_t **next_level = NULL;
+
+		for (i = 0; i < current_level_size; ++i)
 		{
-		/* Mark the vertex as visited and call the action */
-			visited[vertex->index] = true;
-			action(vertex, depth);
-		/* Update the maximum depth if necessary */
-			if (depth > max)
-				max = depth;
-		/* Enqueue all connected vertices with depth + 1 */
-			edge = vertex->edges;
-			while (edge)
+			vertex_t *v = current_level[i];
+
+			if (!visited[v->index])
 			{
-				rear = enqueue(rear, edge->dest, depth + 1);
-				if (!rear)
+				visited[v->index] = true;
+				action(v, max_depth);
+				for (edge_t *edge = v->edges; edge; edge = edge->next)
 				{
-					free(visited);
-					return (0);
+					vertex_t *neighbor = edge->dest;
+
+					if (!visited[neighbor->index])
+					{
+						++next_level_size;
+						next_level = realloc(next_level, next_level_size * sizeof(vertex_t *));
+						if (!next_level)
+						{
+							free(current_level);
+							free(visited);
+							return (0);
+						}
+						next_level[next_level_size - 1] = neighbor;
+					}
 				}
-				edge = edge->next;
 			}
 		}
-		free(current);
+		free(current_level);
+		current_level = next_level;
+		current_level_size = next_level_size;
+		++max_depth;
 	}
 	free(visited);
-	return (max);
+	return (max_depth - 1);
 }
