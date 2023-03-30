@@ -1,73 +1,101 @@
 #include "graphs.h"
 
 /**
+ * enqueue - Enqueues a vertex with a given depth into a queue
+ * @front: pointer to a pointer to the front node of the queue
+ * @rear: pointer to a pointer to the rear node of the queue
+ * @vertex: pointer to the vertex to be enqueued
+ * @depth: the depth of the vertex in the graph
+ */
+void enqueue(queue_node_t **front, queue_node_t **rear, vertex_t *vertex,
+		size_t depth)
+{
+	queue_node_t *new_node = malloc(sizeof(queue_node_t));
+
+	new_node->vertex = vertex;
+	new_node->depth = depth;
+	new_node->next = NULL;
+
+	/* If queue is empty, set both front and rear point to new node... */
+	if (!*rear)
+	{
+		*front = *rear = new_node;
+		return;
+	}
+	/* ...else, set new node at end of the queue */
+	(*rear)->next = new_node;
+	*rear = new_node;
+}
+
+/**
+ * dequeue - Dequeues the front node from a queue
+ * @front: pointer to a pointer to the front node of the queue
+ * @rear: pointer to a pointer to the rear node of the queue
+ * Return: pointer to the dequeued node, NULL otherwise
+ */
+queue_node_t *dequeue(queue_node_t **front, queue_node_t **rear)
+{
+	queue_node_t *temp;
+
+	if (!*front)
+		return (NULL);
+
+	temp = *front;
+	*front = (*front)->next;
+
+	if (!*front)
+		*rear = NULL;
+
+	return (temp);
+}
+
+/**
  * breadth_first_traverse - goes through a graph using the BFS algorithm
  * @graph: pointer to the graph to traverse
- * @action: pointer to a function to be called for each visited vertex
+ * @action: pointer to a function to be called for each visited vertex.
  * Return: biggest vertex depth, 0 otherwise
  */
-
-size_t breadth_first_traverse(const graph_t *graph, void (*action)
-		(const vertex_t *v, size_t depth))
+size_t breadth_first_traverse(const graph_t *graph,
+		void (*action)(const vertex_t *v, size_t depth))
 {
-	size_t max_depth, current_level_size, next_level_size, i;
 	bool *visited;
-	vertex_t **current_level, **next_level, *v, *neighbor;
+	queue_node_t *current_node, *front = NULL, *rear = NULL;
+	vertex_t *current_vertex, *neighbor;
 	edge_t *edge;
+	size_t current_depth, max_depth = 0;
 
 	if (!graph || !action)
 		return (0);
 	visited = calloc(graph->nb_vertices, sizeof(bool));
 	if (!visited)
 		return (0);
-
-	max_depth = 0;
-	current_level_size = 1;
-	current_level = malloc(current_level_size * sizeof(vertex_t *));
-
-	if (!current_level)
+	enqueue(&front, &rear, graph->vertices, 0);
+	visited[graph->vertices->index] = true;
+	while (front != NULL)
 	{
-		free(visited);
-		return (0);
-	}
-	current_level[0] = graph->vertices;
-	while (current_level_size > 0)
-	{
-		next_level_size = 0;
-		next_level = NULL;
+		/* Dequeue the front node and get its vertex and depth */
+		current_node = dequeue(&front, &rear);
+		current_vertex = current_node->vertex;
+		current_depth = current_node->depth;
+		/* Update max_depth if necessary and call action */
+		if (current_depth > max_depth)
+			max_depth = current_depth;
+		action(current_vertex, current_depth);
 
-		for (i = 0; i < current_level_size; ++i)
+		/* Iterate through the neighbors of the current vertex */
+		for (edge = current_vertex->edges; edge; edge = edge->next)
 		{
-			v = current_level[i];
-
-			if (!visited[v->index])
+			neighbor = edge->dest;
+			/* If not visited yet, enqueue it and mark visited */
+			if (!visited[neighbor->index])
 			{
-				visited[v->index] = true;
-				action(v, max_depth);
-				for (edge = v->edges; edge; edge = edge->next)
-				{
-					neighbor = edge->dest;
-
-					if (!visited[neighbor->index])
-					{
-						++next_level_size;
-						next_level = realloc(next_level, next_level_size * sizeof(vertex_t *));
-						if (!next_level)
-						{
-							free(current_level);
-							free(visited);
-							return (0);
-						}
-						next_level[next_level_size - 1] = neighbor;
-					}
-				}
+				visited[neighbor->index] = true;
+				enqueue(&front, &rear, neighbor,
+						current_depth + 1);
 			}
 		}
-		free(current_level);
-		current_level = next_level;
-		current_level_size = next_level_size;
-		++max_depth;
+		free(current_node);
 	}
 	free(visited);
-	return (max_depth - 1);
+	return (max_depth);
 }
