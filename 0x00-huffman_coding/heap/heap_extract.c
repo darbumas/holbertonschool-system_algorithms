@@ -1,4 +1,4 @@
-#include "heap/heap.h"
+#include "heap.h"
 
 /**
  * get_height - Finds the height of the Binary Tree
