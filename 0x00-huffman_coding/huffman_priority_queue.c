@@ -1,9 +1,5 @@
 #include "huffman.h"
 
-#include <stdlib.h>
-#include "heap.h"
-#include "symbol.h"
-
 /**
  * symbol_cmp - Compares two symbol_t structures based on frequency
  * @p1: First pointer to symbol_t structure
