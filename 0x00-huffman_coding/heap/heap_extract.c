@@ -16,19 +16,49 @@ static size_t get_height(size_t size)
 }
 
 /**
- * get_last_node - Finds the last node
+ * bubble_down - ensures that the min-heap property is maintained after
+ * extracting the root node
+ * @heap: pointer to the heap
+ * @node: pointer to the node to start bubbling down from
+ */
+static void bubble_down(heap_t *heap, binary_tree_node_t *node)
+{
+	binary_tree_node_t *smallest_child;
+	void *tmp_data;
+
+	while (node->left)
+	{
+		smallest_child = node->left;
+		if (node->right && heap->data_cmp(node->right->data, node->left->data) < 0)
+		{
+			smallest_child = node->right;
+		}
+
+		if (heap->data_cmp(smallest_child->data, node->data) >= 0)
+			break;
+
+		tmp_data = node->data;
+		node->data = smallest_child->data;
+		smallest_child->data = tmp_data;
+		node = smallest_child;
+	}
+}
+
+/**
+ * get_last_node - Finds the last node in the heap
  * @heap: pointer to the heap
  *
- * Return: pointer to the last node
+ * Return: pointer to the last node in the heap
  */
 static binary_tree_node_t *get_last_node(heap_t *heap)
 {
 	size_t size, height, bit;
-	binary_tree_node_t *node;
+	binary_tree_node_t *node = NULL;
 
 	if (heap->size == 0)
 		return (NULL);
-	size = heap->size - 1;
+
+	size = heap->size;
 	height = get_height(size);
 	bit = 1 << (height - 1);
 	node = heap->root;
@@ -36,96 +66,67 @@ static binary_tree_node_t *get_last_node(heap_t *heap)
 	while (bit > 1)
 	{
 		bit >>= 1;
-		if (size & bit)
+		if ((size & bit) || ((size >> 1) & bit))
 			node = node->right;
 		else
 			node = node->left;
 	}
 	return (node);
 }
-/**
- * bubble_down - Maintains the Min Heap properties
- * @heap: pointer to the heap
- * @node: pointer to the Binary Tree node
- */
-static void bubble_down(heap_t *heap, binary_tree_node_t *node)
-{
-	binary_tree_node_t *smallest_child = NULL;
-	void *tmp_data;
-
-	while (1)
-	{
-		if (node->left && (!node->right ||
-			heap->data_cmp(node->left->data, node->right->data) < 0))
-			smallest_child = node->left;
-		else if (node->right)
-			smallest_child = node->right;
-		else
-			break;
-		if (heap->data_cmp(node->data, smallest_child->data) > 0)
-		{
-			tmp_data = node->data;
-			node->data = smallest_child->data;
-			smallest_child->data = tmp_data;
-			node = smallest_child;
-		}
-		else
-			break;
-	}
-}
 
 /**
- * detach_last_node - Detaches the last node from its parent while updating the
- * parent's left and right pointers accordingly
+ * detach_last_node - Detaches the last node in the heap
  * @heap: pointer to the heap
- * @last_node: pointer to the last node to detach
+ * @last_node: pointer to the last node in the heap
  */
 static void detach_last_node(heap_t *heap, binary_tree_node_t *last_node)
 {
 	if (!heap || !last_node)
 		return;
-	if (last_node->parent->right == last_node)
-		last_node->parent->right = NULL;
-	else
-		last_node->parent->left = NULL;
+	if (last_node->parent)
+	{
+		if (last_node->parent->left == last_node)
+			last_node->parent->left = NULL;
+		else
+			last_node->parent->right = NULL;
+	}
+	last_node->parent = NULL;
 }
 
 /**
  * heap_extract - Extracts the root value of a Min Binary Heap
- * @heap: pointer to the heap from which to extract the value
+ * @heap: pointer to the heap
  *
  * Return: pointer to the data that was stored in the root node of the heap
  */
 void *heap_extract(heap_t *heap)
 {
-	void *root_data;
-	binary_tree_node_t *last_node;
+	void *data = NULL;
+	binary_tree_node_t *last_node = NULL;
 
 	if (!heap || !heap->root)
 		return (NULL);
 
-	root_data = heap->root->data;
+	data = heap->root->data;
 
-	if (heap->size == 1)
+	last_node = get_last_node(heap);
+	detach_last_node(heap, last_node);
+
+	if (heap->root != last_node)
 	{
-		free(heap->root);
-		heap->root = NULL;
+		last_node->left = heap->root->left;
+		last_node->right = heap->root->right;
+		if (last_node->left)
+			last_node->left->parent = last_node;
+		if (last_node->right)
+			last_node->right->parent = last_node;
 	}
-	else
-	{
-		last_node = get_last_node(heap);
-		if (last_node == heap->root->left ||
-			last_node == heap->root->right)
-		{
-			if (last_node->parent->left == last_node)
-				last_node->parent->left = NULL;
-		}
-		else
-			detach_last_node(heap, last_node);
-		heap->root->data = last_node->data;
-		free(last_node);
-		bubble_down(heap, heap->root);
-	}
+
+	free(heap->root);
+	heap->root = last_node;
 	heap->size--;
-	return (root_data);
+
+	bubble_down(heap, last_node);
+
+	return (data);
 }
