@@ -30,12 +30,15 @@ heap_t *huffman_priority_queue(char *data, size_t *freq, size_t size)
 	symbol_t *symbol;
 	binary_tree_node_t *node;
 	size_t i;
+	
+	if (!data || !freq || size == 0)
+		return (NULL);
 
 	p_q = heap_create(symbol_cmp);
 	if (!p_q)
 		return (NULL);
 
-	for (i = 0; i < size; ++i)
+	for (i = 0; i < size; i++)
 	{
 		symbol = symbol_create(data[i], freq[i]);
 		if (!symbol)
