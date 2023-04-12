@@ -34,10 +34,11 @@ static int backtrack(char **map, int rows, int cols, int x, int y,
 
 	if (x == rows - 1 && y == cols - 1)
 		return (1);
-	if (backtrack(map, rows, cols, x + 1, y, path) ||
-		backtrack(map, rows, cols, x, y + 1, path) ||
-		backtrack(map, rows, cols, x - 1, y, path) ||
-		backtrack(map, rows, cols, x, y - 1 , path))
+	/* Visit neighbor cells in RBLT order */
+	if (backtrack(map, rows, cols, x, y + 1, path) || /* RIGHT */
+		backtrack(map, rows, cols, x - 1, y, path) || /* BOTTOM */
+		backtrack(map, rows, cols, x, y - 1, path) || /* LEFT */
+		backtrack(map, rows, cols, x + 1, y, path)) /* TOP */
 		return (1);
 
 	free(dequeue(path));
