@@ -13,8 +13,8 @@
  */
 typedef struct point_s
 {
-    int x;
-    int y;
+	int x;
+	int y;
 } point_t;
 
 /* Backtracking - Array */
