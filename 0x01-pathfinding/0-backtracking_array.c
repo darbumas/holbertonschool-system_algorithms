@@ -1,120 +1,98 @@
 #include "pathfinding.h"
-#include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 
 /**
- * recursive_backtrack - Performs the actual recursive backtracking
- * @map: 2-D array of a grid, where '0' indicates a free cell and '1' indicates
- * a blocked cell
- * @rows: number of rows in the map
- * @cols: number of columns in the map
- * @cur: pointer to current point (cell) in the map
- * @target: points to the target point (destination) in the map
- * @path: points to a queue that stores the found path from 'start' to 'target'
- *
- * Return: 1 if a valid path to target is found, otherwise 0.
+ * backtrack - recursively does the backtracking
+ * @map: pointer to a 2D grid
+ * @rows: number of rows in grid
+ * @cols: number of columns in grid
+ * @x: x coordinate
+ * @y: y coordinate
+ * @path: pointer to the queue storing path
+ * Return: 1 if path found, otherwise 0
  */
-static int recursive_backtrack(char **map, int rows, int cols, point_t *cur,
-		point_t const *target, queue_t *path)
+static int backtrack(char **map, int rows, int cols, int x, int y,
+		queue_t *path)
 {
-	point_t next, *point = NULL;
-	int result;
+	point_t *cur_point;
 
-	/* Is the current point blocked or out of bounds? */
-	if (cur->x < 0 || cur->x >= rows || cur->y < 0 || cur->y >= cols ||
-			map[cur->x][cur->y] == '1')
+	if (x < 0 || x >= rows || y < 0 || y >= cols || map[x][y] == '1')
 		return (0);
 
-	/* Print the current coordinates */
-	printf("Checking coordinates [%d, %d]\n", cur->x, cur->y);
+	/* Set current cell as visited */
+	map[x][y] = '1';
 
-/* If the current point is the target, add it to the path and return 1 */
-	if (cur->x == target->x && cur->y == target->y)
-		return (1);
-	/* Mark the current cell as visited */
-	map[cur->x][cur->y] = '1';
-
-	point = malloc(sizeof(point_t));
-	if (!point)
+	cur_point = malloc(sizeof(point_t));
+	if (!cur_point)
 		return (0);
-	*point = *cur;
+	cur_point->x = x;
+	cur_point->y = y;
+	queue_push_back(path, cur_point);
 
-	/* Move right */
-	next.x = cur->x;
-	next.y = cur->y + 1;
-	result = recursive_backtrack(map, rows, cols, &next, target, path);
-	if (result)
-	{
-		queue_push_front(path, point);
+	if (x == rows - 1 && y == cols - 1)
 		return (1);
-	}
-	/* Move down */
-	next.x = cur->x + 1;
-	next.y = cur->y;
-	result = recursive_backtrack(map, rows, cols, &next, target, path);
-	if (result)
-	{
-		queue_push_front(path, point);
+	if (backtrack(map, rows, cols, x, y + 1, path) ||
+		backtrack(map, rows, cols, x + 1, y, path) ||
+		backtrack(map, rows, cols, x, y - 1, path) ||
+		backtrack(map, rows, cols, x - 1, y, path))
 		return (1);
-	}
-	/* Move left */
-	next.x = cur->x;
-	next.y = cur->y - 1;
-	result = recursive_backtrack(map, rows, cols, &next, target, path);
-	if (result)
-	{
-		queue_push_front(path, point);
-		return (1);
-	}
-	/* Move up */
-	next.x = cur->x - 1;
-	next.y = cur->y;
-	result = recursive_backtrack(map, rows, cols, &next, target, path);
-	if (result)
-	{
-		queue_push_front(path, point);
-		return (1);
-	}
-	free(point);
+
+	free(dequeue(path));
 	return (0);
 }
 
 /**
- * backtracking_array - searches for the first path from a starting point to a
- * target point within a 2D array
- * @map: the 2D grid
+ * backtracking_array - searches for the first path from a starting point to
+ * a target point within a 2D array
+ * @map: pointer to a read-only 2D array
  * @rows: number of rows in the grid
  * @cols: number of columns in the grid
- * @start: stores the coordinate of starting point
- * @target: stores the coordinate of the target point.
- *
- * Return: pointer to a queue in which each node is a point in the path from
- * start to target; otherwise NULL.
+ * @start: stores coordinates of starting point
+ * @target: stores coordinates of target point
+ * Return: pointer to created queue with found path, or NULL
  */
 queue_t *backtracking_array(char **map, int rows, int cols,
 		point_t const *start, point_t const *target)
 {
+	char **copy;
 	queue_t *path;
-	point_t *origin, cur;
+	int i;
 
-	path = queue_create();
-	if (!path)
+	if (!map || rows <= 0 || cols <= 0 || !start || !target)
 		return (NULL);
-	cur = *start;
+	copy = malloc(rows * sizeof(char *));
+	if (!copy)
+		return (NULL);
 
-	if (recursive_backtrack(map, rows, cols, &cur, target, path))
+	for (i = 0; i < rows; i++)
 	{
-		origin = malloc(sizeof(point_t));
-		if (!origin)
+		copy[i] = malloc(cols + 1);
+		if (!copy[i])
 		{
-			queue_delete(path);
+			while (--i >= 0)
+				free(copy[i]);
+			free(copy);
 			return (NULL);
 		}
-		*origin = *start;
-		queue_push_front(path, origin);
-		return (path);
+		memcpy(copy[i], map[i], cols);
+		copy[i][cols] = '\0';
 	}
-	/* If no path is found, delete the queue and return NULL */
-	queue_delete(path);
-	return (NULL);
+	path = queue_create();
+	if (!path)
+	{
+		for (i = 0; i < rows; i++)
+			free(copy[i]);
+		free(copy);
+		return (NULL);
+	}
+	if (!backtrack(copy, rows, cols, start->x, start->y, path))
+	{
+		queue_delete(path);
+		path = NULL;
+	}
+	for (i = 0; i < rows; i++)
+		free(copy[i]);
+	free(copy);
+	return (path);
 }
