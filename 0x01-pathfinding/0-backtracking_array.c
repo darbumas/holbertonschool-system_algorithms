@@ -24,12 +24,12 @@ static int backtrack(char **map, int rows, int cols, int x, int y,
 	/* Set current cell as visited */
 	map[x][y] = '1';
 
+	printf("Checking coordinates [%d, %d]\n", x, y);
 	cur_point = malloc(sizeof(point_t));
 	if (!cur_point)
 		return (0);
 	cur_point->x = x;
 	cur_point->y = y;
-	printf("Checking coordinates [%d, %d]\n", cur_point->x, cur_point->y);
 	queue_push_back(path, cur_point);
 
 	if (x == rows - 1 && y == cols - 1)
