@@ -36,8 +36,8 @@ static int backtrack(char **map, int rows, int cols, int x, int y,
 		return (1);
 	if (backtrack(map, rows, cols, x + 1, y, path) ||
 		backtrack(map, rows, cols, x, y + 1, path) ||
-		backtrack(map, rows, cols, x, y - 1, path) ||
-		backtrack(map, rows, cols, x - 1, y, path))
+		backtrack(map, rows, cols, x - 1, y, path) ||
+		backtrack(map, rows, cols, x, y - 1 , path))
 		return (1);
 
 	free(dequeue(path));
