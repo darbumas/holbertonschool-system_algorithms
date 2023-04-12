@@ -19,7 +19,7 @@ int backtrack(graph_t *graph, vertex_t *vertex, vertex_t const *target,
 	if (!vertex)
 		return (0);
 
-	printf("Checking vertex: %s\n", vertex->content);
+	printf("Checking %s\n", vertex->content);
 	vertex->index = 1;
 	queue_push_back(path, vertex->content);
 
