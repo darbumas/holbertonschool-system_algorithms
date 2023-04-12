@@ -29,7 +29,7 @@ static int backtrack(char **map, int rows, int cols, int x, int y,
 		return (0);
 	cur_point->x = x;
 	cur_point->y = y;
-	printf("Checking coordinates [%d, %d]", cur_point->x, cur_point->y);
+	printf("Checking coordinates [%d, %d]\n", cur_point->x, cur_point->y);
 	queue_push_back(path, cur_point);
 
 	if (x == rows - 1 && y == cols - 1)
