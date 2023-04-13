@@ -10,6 +10,8 @@
  * @cols: number of columns in grid
  * @x: x coordinate
  * @y: y coordinate
+ * @start: the starting point
+ * @target: the target point
  * @path: pointer to the queue storing path
  * Return: 1 if path found, otherwise 0
  */
@@ -74,9 +76,11 @@ queue_t *backtracking_array(char **map, int rows, int cols,
 	if (!map || !start || !target)
 		return (NULL);
 
-	if (!(path = queue_create()))
+	path = queue_create();
+	if (!path)
 		return (NULL);
-	if (!(copy = malloc(rows * sizeof(char *))))
+	copy = malloc(rows * sizeof(char *));
+	if (!copy)
 	{
 		queue_delete(path);
 		return (NULL);
