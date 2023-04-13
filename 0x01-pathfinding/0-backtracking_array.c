@@ -35,7 +35,7 @@ static int backtrack(char **map, int rows, int cols, int x, int y,
 	}
 	/* Mark cell as visited and print it */
 	map[y][x] = '1';
-	printf("Checking coordinates [%d, %d]\n", x, y);
+	/*printf("Checking coordinates [%d, %d]\n", x, y);*/
 
 	/* Visit neighbor cells in RBLT order */
 	if (backtrack(map, rows, cols, x + 1, y, start, target, path) ||
@@ -76,9 +76,12 @@ queue_t *backtracking_array(char **map, int rows, int cols,
 	if (!map || !start || !target)
 		return (NULL);
 
+	/* Init the queue */
 	path = queue_create();
 	if (!path)
 		return (NULL);
+
+	/* A bit redundant but operate on a copy of map */
 	copy = malloc(rows * sizeof(char *));
 	if (!copy)
 	{
@@ -98,6 +101,7 @@ queue_t *backtracking_array(char **map, int rows, int cols,
 		}
 		strncpy(copy[i], map[i], cols);
 	}
+	printf("Checking coordinates [%d, %d]", start->x, start->y);
 	if (!backtrack(copy, rows, cols, start->x, start->y, (point_t *)start,
 		(point_t *)target, path))
 	{
