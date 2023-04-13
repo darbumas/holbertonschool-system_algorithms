@@ -34,8 +34,8 @@ static int backtrack(char **map, int rows, int cols, int x, int y,
 			return (1);
 	}
 	/* Mark cell as visited and print it */
-	map[y][x] = '1';
 	printf("Checking coordinates [%d, %d]\n", x, y);
+	map[y][x] = '1';
 
 	/* Visit neighbor cells in RBLT order */
 	if (backtrack(map, rows, cols, x + 1, y, start, target, path) ||
