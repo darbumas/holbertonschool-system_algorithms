@@ -23,6 +23,7 @@ static int backtrack(char **map, int rows, int cols, int x, int y,
 	if (x < 0 || x >= cols || y < 0 || y >= rows || map[y][x] == '1')
 		return (0);
 
+	printf("Checking coordinates [%d, %d]\n", x, y);
 	if (x == target->x && y == target->y)
 	{
 		point = malloc(sizeof(point_t));
@@ -34,7 +35,7 @@ static int backtrack(char **map, int rows, int cols, int x, int y,
 			return (1);
 	}
 	/* Mark cell as visited and print it */
-	printf("Checking coordinates [%d, %d]\n", x, y);
+	/* printf("Checking coordinates [%d, %d]\n", x, y);*/
 	map[y][x] = '1';
 
 	/* Visit neighbor cells in RBLT order */
