@@ -14,34 +14,43 @@
  * Return: 1 if path found, otherwise 0
  */
 static int backtrack(char **map, int rows, int cols, int x, int y,
-		queue_t *path)
+		point_t *start, point_t *target, queue_t *path)
 {
-	point_t *cur_point;
+	point_t *point;
 
-	if (x < 0 || x >= rows || y < 0 || y >= cols || map[x][y] == '1')
+	if (x < 0 || x >= cols || y < 0 || y >= rows || map[y][x] == '1')
 		return (0);
 
-	/* Set current cell as visited */
-	map[x][y] = '1';
+	if (x == target->x && y == target->y)
+	{
+		point = malloc(sizeof(point_t));
+		if (!point)
+			return (0);
+		point->x = x;
+		point->y = y;
+		queue_push_front(path, point);
+			return (1);
+	}
+	/* Mark cell as visited and print it */
+	map[y][x] = '1';
+	printf("Checking coordinates [%d, %d]\n", x, y);
 
-	cur_point = malloc(sizeof(point_t));
-	if (!cur_point)
-		return (0);
-	cur_point->x = x;
-	cur_point->y = y;
-	printf("Checking coordinates [%d, %d]\n", cur_point->x, cur_point->y);
-	queue_push_back(path, cur_point);
-
-	if (x == rows - 1 && y == cols - 1)
-		return (1);
 	/* Visit neighbor cells in RBLT order */
-	if (backtrack(map, rows, cols, x, y + 1, path) || /* RIGHT */
-		backtrack(map, rows, cols, x + 1, y, path) || /* BOTTOM */
-		backtrack(map, rows, cols, x, y - 1, path) || /* LEFT */
-		backtrack(map, rows, cols, x - 1, y, path)) /* TOP */
+	if (backtrack(map, rows, cols, x + 1, y, start, target, path) ||
+		backtrack(map, rows, cols, x, y + 1, start, target, path) ||
+		backtrack(map, rows, cols, x - 1, y, start, target, path) ||
+		backtrack(map, rows, cols, x, y - 1, start, target, path))
+	{
+		point = malloc(sizeof(point_t));
+		if (!point)
+			return (0);
+		point->x = x;
+		point->y = y;
+		queue_push_front(path, point);
 		return (1);
+	}
+	map[y][x] = '0';
 
-	free(dequeue(path));
 	return (0);
 }
 
@@ -60,36 +69,33 @@ queue_t *backtracking_array(char **map, int rows, int cols,
 {
 	char **copy;
 	queue_t *path;
-	int i;
+	int i, j;
 
-	if (!map || rows <= 0 || cols <= 0 || !start || !target)
-		return (NULL);
-	copy = malloc(rows * sizeof(char *));
-	if (!copy)
+	if (!map || !start || !target)
 		return (NULL);
 
+	if (!(path = queue_create()))
+		return (NULL);
+	if (!(copy = malloc(rows * sizeof(char *))))
+	{
+		queue_delete(path);
+		return (NULL);
+	}
 	for (i = 0; i < rows; i++)
 	{
 		copy[i] = malloc(cols + 1);
 		if (!copy[i])
 		{
-			while (--i >= 0)
-				free(copy[i]);
+			for (j = 0; j < i; j++)
+				free(copy[j]);
 			free(copy);
+			queue_delete(path);
 			return (NULL);
 		}
-		memcpy(copy[i], map[i], cols);
-		copy[i][cols] = '\0';
+		strncpy(copy[i], map[i], cols);
 	}
-	path = queue_create();
-	if (!path)
-	{
-		for (i = 0; i < rows; i++)
-			free(copy[i]);
-		free(copy);
-		return (NULL);
-	}
-	if (!backtrack(copy, rows, cols, start->x, start->y, path))
+	if (!backtrack(copy, rows, cols, start->x, start->y, (point_t *)start,
+		(point_t *)target, path))
 	{
 		queue_delete(path);
 		path = NULL;
@@ -97,5 +103,6 @@ queue_t *backtracking_array(char **map, int rows, int cols,
 	for (i = 0; i < rows; i++)
 		free(copy[i]);
 	free(copy);
+
 	return (path);
 }
