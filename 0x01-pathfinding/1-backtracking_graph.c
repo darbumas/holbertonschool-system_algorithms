@@ -1,64 +1,84 @@
 #include "pathfinding.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 /**
- * backtrack - recursive helper function
+ * backtrack - recursively does the backtracking on a graph
  * @graph: pointer to the graph
- * @vertex: pointer to a starting vertex in the graph
- * @target: pointer to the target vertex in the graph
- * @path: pointer to the found path
- * Return: 1 if path is found, otherwise 0
+ * @vertex: pointer to the current vertex
+ * @visited: array to keep track of visited vertices
+ * @target: the target vertex
+ * @path: pointer to the queue storing path
+ * Return: 1 if path found, otherwise 0
  */
-int backtrack(graph_t *graph, vertex_t *vertex, vertex_t const *target,
-		queue_t *path)
+static int backtrack(graph_t *graph, vertex_t *vertex, int *visited,
+			vertex_t const *target, queue_t *path)
 {
 	edge_t *edge;
-	vertex_t *next;
+	int found = 0;
+	char *content;
 
-	if (!vertex)
+	if (vertex == target)
+	{
+		printf("Checking %s\n", vertex->content);
+		content = strdup(vertex->content);
+		queue_push_front(path, content);
+		return (1);
+	}
+	if (visited[vertex->index])
 		return (0);
 
 	printf("Checking %s\n", vertex->content);
-	vertex->index = 1;
-	queue_push_back(path, vertex->content);
-
-	if (vertex == target)
-		return (1);
+	visited[vertex->index] = 1;
 
 	for (edge = vertex->edges; edge; edge = edge->next)
 	{
-		next = edge->dest;
-		if (!next->index)
+		found = backtrack(graph, edge->dest, visited, target, path);
+		if (found)
 		{
-			if (backtrack(graph, next, target, path))
-				return (1);
+			content = strdup(vertex->content);
+			queue_push_front(path, content);
+			break;
 		}
 	}
-	dequeue(path);
-	vertex->index = 0;
-
-	return (0);
+	return (found);
 }
 
 /**
- * backtracking_graph -  searches for the first path from a starting point to
- * a target point in a graph
- * @graph: pointer to the graph to traverse
+ * backtracking_graph - searches for the first path from a starting point to
+ * a target point within a graph
+ * @graph: pointer to the graph to go through
  * @start: pointer to the starting vertex
  * @target: pointer to the target vertex
- * Return: a queue in which each node is a char * corresponding to a vertex,
- * forming a path from start to target
+ * Return: pointer to created queue with found path, or NULL
  */
 queue_t *backtracking_graph(graph_t *graph, vertex_t const *start,
 		vertex_t const *target)
 {
-	queue_t *path = queue_create();
+	int *visited;
+	queue_t *path;
 
-	if (!graph || !start || !target || !path)
+	if (!graph || !start || !target)
 		return (NULL);
 
-	backtrack(graph, (vertex_t *)start, target, path);
+	/* Init visited array */
+	visited = calloc(graph->nb_vertices, sizeof(int));
+	if (!visited)
+		return (NULL);
 
+	/* Init the queue for the path */
+	path = queue_create();
+	if (!path)
+	{
+		free(visited);
+		return (NULL);
+	}
+	if (!backtrack(graph, (vertex_t *)start, visited, target, path))
+	{
+		queue_delete(path);
+		path = NULL;
+	}
+	free(visited);
 	return (path);
 }
