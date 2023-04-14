@@ -19,6 +19,7 @@ static int backtrack(char **map, int rows, int cols, int x, int y,
 		point_t *start, point_t *target, queue_t *path)
 {
 	point_t *point;
+	char og_value;
 
 	if (x < 0 || x >= cols || y < 0 || y >= rows || map[y][x] == '1')
 		return (0);
@@ -36,6 +37,7 @@ static int backtrack(char **map, int rows, int cols, int x, int y,
 			return (1);
 	}
 	/* Mark cell as visited */
+	og_value = map[y][x];
 	map[y][x] = '1';
 
 	/* Visit neighbor cells in RBLT order */
@@ -52,7 +54,7 @@ static int backtrack(char **map, int rows, int cols, int x, int y,
 		queue_push_front(path, point);
 		return (1);
 	}
-	map[y][x] = '0';
+	map[y][x] = og_value;
 
 	return (0);
 }
