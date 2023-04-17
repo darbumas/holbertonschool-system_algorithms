@@ -167,6 +167,7 @@ queue_t *dijkstra_graph(graph_t *graph, vertex_t const *start,
 
 	free(dist);
 	free(visited);
+	queue_delete(queue); /* Free the queue before returning */
 
 	return (path);
 }
