@@ -28,21 +28,20 @@ nary_tree_t *nary_tree_insert(nary_tree_t *parent, char const *str)
 		free(node);
 		return (NULL);
 	}
-	/* Set the parent of the new node */
-	node->parent = parent;
-	/* Initialize the number of children to 0 */
-	node->nb_children = 0;
 
-	/* Add the new node at the beginning of parent's children llst */
+	/* Initialize the new node */
+	node->parent = parent;
+	node->nb_children = 0;
+	node->children = NULL;
+	node->next = NULL;
+
+	/* If parent is not NULL */
 	if (parent)
 	{
+		/* Set new node at the beginning of the parent's llst */
 		node->next = parent->children;
 		parent->children = node;
 		parent->nb_children++;
 	}
-	else
-	/* parent is NULL so... set the new node's next pointer to NULL */
-		node->next = NULL;
-
 	return (node);
 }
